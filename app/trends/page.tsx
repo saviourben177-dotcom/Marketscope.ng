@@ -1,9 +1,14 @@
+import { getOpaindexPrices } from "@/lib/opaindex";
 import { getProductSummaries } from "@/lib/queries";
 import TrendsClient from "./trends-client";
 
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export default async function TrendsPage() {
-  const products = await getProductSummaries();
-  return <TrendsClient products={products} />;
+  const [products, marketPrices] = await Promise.all([
+    getProductSummaries(),
+    getOpaindexPrices(),
+  ]);
+
+  return <TrendsClient products={products} marketPrices={marketPrices} />;
 }
