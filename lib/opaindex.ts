@@ -26,7 +26,10 @@ interface OpaindexResponse {
   asOf?: string;
 }
 
-const API_URL = "https://api.opaindex.com/prices";
+// The public REST endpoint can intermittently return 503 from Vercel.
+// Opaindex also publishes the same machine-readable dataset as a free JSON
+// download, so use that stable public feed instead.
+const API_URL = "https://opaindex.com/commodities/prices.json";
 
 export async function getOpaindexPrices(): Promise<OpaindexPrice[]> {
   try {
@@ -40,7 +43,8 @@ export async function getOpaindexPrices(): Promise<OpaindexPrice[]> {
       return [];
     }
 
-    const payload = (await response.json()) as OpaindexResponse;
+    const payload = (await response.json()) as OpaindexResponse | OpaindexPrice[];
+    if (Array.isArray(payload)) return payload;
     return Array.isArray(payload.prices) ? payload.prices : [];
   } catch (error) {
     console.error("Opaindex request failed:", error);
